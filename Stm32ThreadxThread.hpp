@@ -121,6 +121,14 @@ namespace Stm32ThreadxThread {
         void resume();
 
         /**
+         * @brief Terminate the current thread.
+         *
+         * This function terminates the execution of the current thread by calling the _txe_thread_terminate() function.
+         * Terminating a thread means that its execution is ended immediately, and its resources are released.
+         */
+        void terminate();
+
+        /**
          * @brief Get the ID of the thread.
          *
          * This function returns the ID of the thread on which it is called. The ID is represented as an `id` object,

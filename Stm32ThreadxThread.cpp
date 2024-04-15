@@ -68,6 +68,9 @@ void thread::resume() {
     tx_thread_resume(this);
 }
 
+void thread::terminate() {
+    tx_thread_terminate(this);
+}
 
 thread::priority thread::getPriority() const {
     return tx_thread_user_priority;
