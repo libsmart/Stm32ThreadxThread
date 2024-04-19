@@ -19,8 +19,8 @@
  * ----------------------------------------------------------------------------
  */
 
-#ifndef LIBSMART_STM32THREADXTHREAD_HPP
-#define LIBSMART_STM32THREADXTHREAD_HPP
+#ifndef LIBSMART_STM32THREADXTHREAD_STM32THREADXTHREAD_HPP
+#define LIBSMART_STM32THREADXTHREAD_STM32THREADXTHREAD_HPP
 
 #include <cstdint>
 #include <type_traits>
@@ -470,4 +470,4 @@ namespace Stm32ThreadxThread {
     }
 }
 
-#endif //LIBSMART_STM32THREADXTHREAD_HPP
+#endif //LIBSMART_STM32THREADXTHREAD_STM32THREADXTHREAD_HPP

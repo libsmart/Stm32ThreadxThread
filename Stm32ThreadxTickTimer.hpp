@@ -19,8 +19,8 @@
  * ----------------------------------------------------------------------------
  */
 
-#ifndef LIBSMART_STM32THREADXTICKTIMER_HPP
-#define LIBSMART_STM32THREADXTICKTIMER_HPP
+#ifndef LIBSMART_STM32THREADXTHREAD_STM32THREADXTICKTIMER_HPP
+#define LIBSMART_STM32THREADXTHREAD_STM32THREADXTICKTIMER_HPP
 
 #include <chrono>
 #include "tx_api.h"
@@ -102,4 +102,4 @@ namespace Stm32ThreadxThread {
     constexpr tick_timer::duration infinity{native::infinite_delay};
 }
 
-#endif //LIBSMART_STM32THREADXTICKTIMER_HPP
+#endif //LIBSMART_STM32THREADXTHREAD_STM32THREADXTICKTIMER_HPP
