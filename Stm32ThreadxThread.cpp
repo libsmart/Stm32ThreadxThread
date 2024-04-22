@@ -72,6 +72,10 @@ void thread::terminate() {
     tx_thread_terminate(this);
 }
 
+void thread::reset() {
+    tx_thread_reset(this);
+}
+
 thread::priority thread::getPriority() const {
     return tx_thread_user_priority;
 }
@@ -125,3 +129,61 @@ void this_thread::sleepFor(tick_timer::duration rel_time) {
     auto result = tx_thread_sleep(toTicks(rel_time));
     assert(result == TX_SUCCESS);
 }
+
+
+#ifndef TX_DISABLE_NOTIFY_CALLBACKS
+
+void thread::set_entry_exit_callback(entry_exit_callback func, void* param)
+    {
+        if (TX_SUCCESS == tx_thread_entry_exit_notify(this, reinterpret_cast<void(*)(TX_THREAD *, unsigned)>(func)))
+        {
+            // TODO: make sure that tx_user.h contains this:
+            // #define TX_THREAD_USER_EXTENSION     void* entry_exit_param_;
+            entry_exit_param_ = param;
+        }
+    }
+
+// fun name collision between macro used right above, and member variable used below
+#undef tx_thread_entry_exit_notify
+
+    thread::entry_exit_callback thread::get_entry_exit_callback() const
+    {
+        return reinterpret_cast<entry_exit_callback>(this->tx_thread_entry_exit_notify);
+    }
+
+    void* thread::get_entry_exit_param() const
+    {
+        return this->entry_exit_param_;
+    }
+
+    bool thread::joinable() const
+    {
+        auto state = get_state();
+        return (state != state::completed) && (state != state::terminated) && (nullptr == get_entry_exit_param());
+    }
+
+    void thread::join_exit_callback(thread *t, UINT id)
+    {
+        if (id == TX_THREAD_EXIT)
+        {
+            auto *exit_cond = reinterpret_cast<semaphore*>(t->get_entry_exit_param());
+
+            exit_cond->release();
+        }
+    }
+
+    void thread::join()
+    {
+        assert(joinable()); // else invalid_argument
+        assert(this->get_id() != this_thread::get_id()); // else resource_deadlock_would_occur
+
+        binary_semaphore exit_cond;
+        set_entry_exit_callback(&thread::join_exit_callback, reinterpret_cast<void*>(&exit_cond));
+
+        // wait for signal from thread exit
+        exit_cond.acquire();
+
+        // signal received, thread is deleted, return
+    }
+
+#endif // !TX_DISABLE_NOTIFY_CALLBACKS

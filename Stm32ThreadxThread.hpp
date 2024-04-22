@@ -129,6 +129,15 @@ namespace Stm32ThreadxThread {
         void terminate();
 
         /**
+         * @brief Resets the specified thread.
+         *
+         * This function resets the specified thread by calling the _txe_thread_reset function with the thread pointer as a parameter.
+         *
+         * @note This function resets the thread by clearing its internal data structures and returning it to its initial state.
+         */
+        void reset();
+
+        /**
          * @brief Get the ID of the thread.
          *
          * This function returns the ID of the thread on which it is called. The ID is represented as an `id` object,
