@@ -28,7 +28,6 @@
 #include "Stm32ThreadxTickTimer.hpp"
 
 namespace Stm32ThreadxThread {
-
     /**
      * @brief Bounce Function
      *
@@ -48,9 +47,9 @@ namespace Stm32ThreadxThread {
      * @note The caller is responsible for ensuring that thread_input represents a valid pointer to an object of type T
      * and the member function pointed to by m is of correct signature and can be called with the provided parameters.
      */
-    template<class T, class Method, Method m, class ...Params>
+    template<class T, class Method, Method m, class... Params>
     static auto bounce(ULONG thread_input, Params... params) ->
-    decltype(((*reinterpret_cast<T *>(thread_input)).*m)(params...)) {
+        decltype(((*reinterpret_cast<T *>(thread_input)).*m)(params...)) {
         return ((*reinterpret_cast<T *>(thread_input)).*m)(params...);
     }
 
@@ -203,10 +202,12 @@ namespace Stm32ThreadxThread {
             using value_type = native::UINT;
 
             constexpr priority()
-                    : value_(1) {}
+                : value_(1) {
+            }
 
             constexpr priority(value_type value)
-                    : value_(value) {}
+                : value_(value) {
+            }
 
             explicit operator value_type &() {
                 return value_;
@@ -255,6 +256,16 @@ namespace Stm32ThreadxThread {
          */
         void setPriority(priority prio);
 
+        /**
+         * @brief Sets the stack pointer and size for the thread.
+         *
+         * This method sets the stack pointer and size for the thread. The stack pointer is a void pointer to the starting address of the stack memory, and the stack size is the total size of the stack memory in bytes.
+         *
+         * @param stackPointer A void pointer to the starting address of the stack memory.
+         * @param stackSize The size of the stack memory in bytes.
+         */
+        void setStack(void *stackPointer, std::uint32_t stackSize);
+
 #ifndef TX_DISABLE_NOTIFY_CALLBACKS
 
         private:
@@ -283,7 +294,14 @@ namespace Stm32ThreadxThread {
 
         thread(void *pstack, std::uint32_t stack_size,
                threadEntry func, native::ULONG param,
-               priority prio, const char *name);
+               priority prio, const char *name) : TX_THREAD_STRUCT(), pstack(pstack), stack_size(stack_size), func(func),
+                                                  param(param),
+                                                  prio(prio), name(name) {
+        }
+
+        thread(threadEntry func, native::ULONG param,
+               priority prio, const char *name) : thread(nullptr, 0, func, param, prio, name) {
+        }
 
     private:
         thread(const thread &) = delete;
@@ -320,47 +338,47 @@ namespace Stm32ThreadxThread {
 
         static_thread(threadEntry func, native::ULONG param,
                       priority prio = priority(), const char *name = DEFAULT_NAME)
-                : thread(stack_, sizeof(stack_) / sizeof(stack_[0]),
-                         func, param, prio, name) {
+            : thread(stack_, sizeof(stack_) / sizeof(stack_[0]),
+                     func, param, prio, name) {
         }
 
         static_thread(threadEntry func, void *param,
                       priority prio = priority(), const char *name = DEFAULT_NAME)
-                : thread(stack_, sizeof(stack_) / sizeof(stack_[0]),
-                         func, param, prio, name) {
+            : thread(stack_, sizeof(stack_) / sizeof(stack_[0]),
+                     func, param, prio, name) {
         }
 
         template<typename T>
         static_thread(typename std::enable_if<(sizeof(T) <= sizeof(std::uintptr_t)),
-                void (*)(T)>::type func, T arg,
+                          void (*)(T)>::type func, T arg,
                       priority prio = priority(), const char *name = DEFAULT_NAME)
-                : static_thread(reinterpret_cast<threadEntry>(func),
-                                reinterpret_cast<void *>(static_cast<std::uintptr_t>(arg)),
-                                prio, name) {
+            : static_thread(reinterpret_cast<threadEntry>(func),
+                            reinterpret_cast<void *>(static_cast<std::uintptr_t>(arg)),
+                            prio, name) {
         }
 
         template<typename T>
         static_thread(void (*func)(T *), T *arg,
                       priority prio = priority(), const char *name = DEFAULT_NAME)
-                : static_thread(reinterpret_cast<threadEntry>(func),
-                                reinterpret_cast<void *>(arg),
-                                prio, name) {
+            : static_thread(reinterpret_cast<threadEntry>(func),
+                            reinterpret_cast<void *>(arg),
+                            prio, name) {
         }
 
         template<typename T>
         static_thread(void (*func)(T *), T &arg,
                       priority prio = priority(), const char *name = DEFAULT_NAME)
-                : static_thread(reinterpret_cast<threadEntry>(func),
-                                reinterpret_cast<void *>(arg),
-                                prio, name) {
+            : static_thread(reinterpret_cast<threadEntry>(func),
+                            reinterpret_cast<void *>(arg),
+                            prio, name) {
         }
 
         template<class T>
         static_thread(T &obj, void (T::*member_func)(),
                       priority prio = priority(), const char *name = DEFAULT_NAME)
-                : static_thread(reinterpret_cast<threadEntry>(member_func),
-                                reinterpret_cast<void *>(&obj),
-                                prio, name) {
+            : static_thread(reinterpret_cast<threadEntry>(member_func),
+                            reinterpret_cast<void *>(&obj),
+                            prio, name) {
         }
 
         void operator delete(void *p) {
@@ -439,8 +457,8 @@ namespace Stm32ThreadxThread {
         void sleepFor(const std::chrono::duration<Rep, Period> &rel_time) {
             this_thread::sleepFor(std::chrono::duration_cast<tick_timer::duration>(rel_time));
             // workaround to prevent this function calling itself
-//            const auto ticks_sleep_for = static_cast<void (*)(tick_timer::duration)>(&sleepFor);
-//            ticks_sleep_for(std::chrono::duration_cast<tick_timer::duration>(rel_time));
+            //            const auto ticks_sleep_for = static_cast<void (*)(tick_timer::duration)>(&sleepFor);
+            //            ticks_sleep_for(std::chrono::duration_cast<tick_timer::duration>(rel_time));
         }
 
         /**

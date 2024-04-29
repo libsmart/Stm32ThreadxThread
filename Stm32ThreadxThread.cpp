@@ -21,32 +21,27 @@
 
 #include <cassert>
 #include "Stm32ThreadxThread.hpp"
+#include "main.hpp"
 
 using namespace Stm32ThreadxThread;
 using namespace Stm32ThreadxThread::native;
 
-thread::thread(void *pstack,
-               std::uint32_t stack_size,
-               threadEntry func,
-               native::ULONG param,
-               priority prio,
-               const char *name) : pstack(pstack), stack_size(stack_size), func(func), param(param), prio(prio),
-                                   name(name), TX_THREAD_STRUCT() {}
-
 void thread::createThread() {
     // https://github.com/eclipse-threadx/rtos-docs/blob/main/rtos-docs/threadx/chapter4.md#tx_thread_create
+    assert_param(pstack != nullptr);
+    assert_param(stack_size > 0);
     auto result = tx_thread_create(
-            this,                       // TX_THREAD *thread_ptr
-            const_cast<char *>(name),   // CHAR *name_ptr
-            func,                       // VOID (*entry_function)(ULONG id)
-            param,                      // ULONG entry_input
-            pstack,                     // VOID *stack_start
-            stack_size,                 // ULONG stack_size
-            prio,                       // UINT priority
-            prio,                       // UINT preempt_threshold
-            TX_NO_TIME_SLICE,           // ULONG time_slice
-            TX_DONT_START);             // UINT auto_start
-    assert(result == TX_SUCCESS);
+        this, // TX_THREAD *thread_ptr
+        const_cast<char *>(name), // CHAR *name_ptr
+        func, // VOID (*entry_function)(ULONG id)
+        param, // ULONG entry_input
+        pstack, // VOID *stack_start
+        stack_size, // ULONG stack_size
+        prio, // UINT priority
+        prio, // UINT preempt_threshold
+        TX_NO_TIME_SLICE, // ULONG time_slice
+        TX_DONT_START); // UINT auto_start
+    assert_param(result == TX_SUCCESS);
 }
 
 
@@ -83,6 +78,13 @@ thread::priority thread::getPriority() const {
 void thread::setPriority(priority prio) {
     priority::value_type old_prio;
     tx_thread_priority_change(this, prio, &old_prio);
+}
+
+void thread::setStack(void *stackPointer, const std::uint32_t stackSize) {
+    assert_param(stackPointer != nullptr);
+    assert_param(stackSize > 0);
+    pstack = stackPointer;
+    stack_size = stackSize;
 }
 
 thread::id thread::getId() const {
